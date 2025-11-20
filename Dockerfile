@@ -90,11 +90,31 @@ FROM dev-deps AS dev
 
 # 개발 편의 도구 설치 (git, vim 등)
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git vim \
+    && apt-get install -y --no-install-recommends ca-certificates default-libmysqlclient-dev git wget procps git vim \
     && rm -rf /var/lib/apt/lists/*
-
+RUN mkdir /app/scripts/
+COPY .github/ ./.github/
+COPY deploy/ ./deploy/
+COPY ./README.md ./README.md
+COPY ./.gitignore ./
+COPY ./.dockerignore ./
+COPY ./.vscode/ ./.vscode/
+COPY ./.pre-commit-config.yaml .
+COPY ./.gitmessage .
+COPY ./.ssh /root/.ssh
+# /////////////////////////////////////////////////////////////////
+# github SSH key 사용
+# /////////////////////////////////////////////////////////////////
+RUN git config --global core.editor "code --wait"
+RUN git config --global user.email "chochyjj@gmail.com"
+RUN git config --global user.name "Hyunyoun Jo"
+RUN chmod 600 /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/id_rsa.pub
+# Command to run the application in development mode
+# --reload: Enables hot-reloading
+# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 # 소스 코드 복사 (Docker Compose 볼륨 마운트 사용 시 덮어씌워짐)
 COPY ./src ./src
 
 # 개발 모드 실행 (Reload 옵션 활성화)
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["zsh", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
