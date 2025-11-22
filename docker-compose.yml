@@ -13,13 +13,12 @@ services:
       - 8000
     networks:
       - project_net
-      - infra_net    
-    logging: 
+      - infra_net
+    logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "2"
-
   test:
     build:
       context: .
@@ -41,7 +40,6 @@ services:
       - DB_NAME=app_db
     networks:
       - project_net
-
   db:
     image: postgres:15
     environment:
@@ -57,7 +55,6 @@ services:
       retries: 5
     networks:
       - project_net
-
 networks:
   project_net:
     driver: bridge
