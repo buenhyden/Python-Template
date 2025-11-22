@@ -29,7 +29,7 @@ services:
     working_dir: /app
     volumes:
       - ./src:/app/src
-      # - ./tests:/app/tests
+      - ./tests:/app/tests
     command: pytest
     depends_on:
       - db

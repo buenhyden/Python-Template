@@ -93,7 +93,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # 소스 코드 복사
 COPY ./src ./src
-# COPY ./tests ./tests  # 테스트 코드가 있다면 복사
+COPY ./tests ./tests
 
 # 테스트 실행
 CMD ["pytest"]
