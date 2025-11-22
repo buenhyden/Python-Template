@@ -36,7 +36,7 @@ WORKDIR /app
 FROM base AS prod-deps
 
 # 의존성 파일 복사 (캐싱 활용)
-COPY ./pyproject.toml ./poetry.lock ./
+COPY ./pyproject.toml ./
 
 # 프로덕션 의존성만 설치 (.venv 생성)
 RUN poetry install --no-root --only main
@@ -84,7 +84,22 @@ USER appuser
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ==========================================
-# Stage 5: Dev (로컬 개발용 이미지)
+# Stage 5: Test (테스트 실행용 이미지)
+# ==========================================
+FROM dev-deps AS test
+
+# 가상환경 경로 설정
+ENV PATH="/app/.venv/bin:$PATH"
+
+# 소스 코드 복사
+COPY ./src ./src
+# COPY ./tests ./tests  # 테스트 코드가 있다면 복사
+
+# 테스트 실행
+CMD ["pytest"]
+
+# ==========================================
+# Stage 6: Dev (로컬 개발용 이미지)
 # ==========================================
 FROM dev-deps AS dev
 
@@ -101,15 +116,15 @@ COPY ./.dockerignore ./
 COPY ./.vscode/ ./.vscode/
 COPY ./.pre-commit-config.yaml .
 COPY ./.gitmessage .
-COPY ./.ssh /root/.ssh
+# COPY ./.ssh /root/.ssh  <-- Removed
 # /////////////////////////////////////////////////////////////////
-# github SSH key 사용
+# github SSH key 사용 (제거됨)
 # /////////////////////////////////////////////////////////////////
-RUN git config --global core.editor "code --wait"
-RUN git config --global user.email "chochyjj@gmail.com"
-RUN git config --global user.name "Hyunyoun Jo"
-RUN chmod 600 /root/.ssh/id_rsa
-RUN chmod 600 /root/.ssh/id_rsa.pub
+# RUN git config --global core.editor "code --wait"
+# RUN git config --global user.email "chochyjj@gmail.com"
+# RUN git config --global user.name "Hyunyoun Jo"
+# RUN chmod 600 /root/.ssh/id_rsa
+# RUN chmod 600 /root/.ssh/id_rsa.pub
 # Command to run the application in development mode
 # --reload: Enables hot-reloading
 # CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,38 +1,65 @@
-# Use root/example as user/password credentials
-x-default-logging: &logging
-  driver: "json-file"
-  options:
-    max-size: "5m"
-    max-file: "2"
-
 services:
-  fastapi:
+  run:
     build:
       context: .
       dockerfile: Dockerfile
       target: dev
-    image: python.fastapi:latest
+    image: python:latest
     hostname: fastapi
     container_name: fastapi
     restart: unless-stopped
     working_dir: /app
     expose:
-      - ${DEFAULT_PYTHON_FASTAPI_PORT}
-    ports:
-      - ${DEFAULT_PYTHON_FASTAPI_HOST_PORT}:${DEFAULT_PYTHON_FASTAPI_PORT}
+      - 8000
     networks:
       - project_net
-      - infra_net
-    stdin_open: true #docker run -i
-    tty: true #docker run -t
-    volumes:
-      - fastapi-volume:/app:rw
-    logging: *logging
+      - infra_net    
+    logging: 
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
 
-volumes:
-  fastapi-volume:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DEFAULT_SOURCECODE_DIR}/FastAPI
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    image: python-template-test
+    container_name: python-template-test
+    working_dir: /app
+    volumes:
+      - ./src:/app/src
+      # - ./tests:/app/tests
+    command: pytest
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=app_db
+    networks:
+      - project_net
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - project_net
+
+networks:
+  project_net:
+    driver: bridge
+  infra_net:
+    driver: bridge
