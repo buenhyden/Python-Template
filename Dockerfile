@@ -113,7 +113,6 @@ COPY deploy/ ./deploy/
 COPY ./README.md ./README.md
 COPY ./.gitignore ./
 COPY ./.dockerignore ./
-COPY ./.vscode/ ./.vscode/
 COPY ./.pre-commit-config.yaml .
 COPY ./.gitmessage .
 # COPY ./.ssh /root/.ssh  <-- Removed
