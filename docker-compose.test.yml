@@ -22,12 +22,6 @@ services:
     image: python-template-test
     container_name: python-template-test
     working_dir: /app
-    volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
-    command: pytest
-    depends_on:
-      - db
     environment:
       - PROJECT_NAME=Test CI
       - KAFKA_CONNECT_URL=http://localhost:8083
@@ -46,8 +40,9 @@ services:
       - DB_NAME=app_db
       - REDIS_URL=redis://localhost:6379
       - N8N_URL=http://localhost:5678
-    networks:
-      - project_net
+    depends_on:
+      postgres:
+        condition: service_healthy
   db:
     image: postgres:15
     environment:
@@ -61,10 +56,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - project_net
-networks:
-  project_net:
-    driver: bridge
-  infra_net:
-    driver: bridge

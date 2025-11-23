@@ -7,6 +7,7 @@ on:
       - "tests/**"
       - ".pre-commit-config.yaml"
       - "Dockerfile"
+      - "docker-compose.test.yml"
       - "docker-compose.yml"
   pull_request:
     branches: ["main", "master"]
@@ -15,6 +16,7 @@ on:
       - "tests/**"
       - ".pre-commit-config.yaml"
       - "Dockerfile"
+      - "docker-compose.test.yml"
       - "docker-compose.yml"
 jobs:
   quality-and-test:
