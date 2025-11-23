@@ -33,3 +33,4 @@ archive.zip
 .env
 .ruff_cache
 logs
+tests/logger_test.py

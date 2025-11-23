@@ -1,8 +1,8 @@
 import logging
-import sys
 import os
-from typing import Optional
+import sys
 from logging.handlers import RotatingFileHandler
+
 from logging_loki import LokiHandler
 from opentelemetry import trace
 
@@ -28,7 +28,7 @@ class AppLogger:
     def setup(
         self,
         service_name: str,
-        loki_url: Optional[str] = None,
+        loki_url: str | None = None,
         enable_console: bool = True,
         enable_file: bool = True,
         enable_loki: bool = False,
