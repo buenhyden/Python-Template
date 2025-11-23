@@ -36,7 +36,7 @@ WORKDIR /app
 FROM base AS prod-deps
 
 # 의존성 파일 복사 (캐싱 활용)
-COPY ./pyproject.toml ./
+COPY ./pyproject.toml ./poetry.lock ./
 
 # 프로덕션 의존성만 설치 (.venv 생성)
 RUN poetry install --no-root --only main
@@ -48,6 +48,22 @@ FROM prod-deps AS dev-deps
 
 # 개발 의존성 포함 전체 설치
 RUN poetry install --no-root
+
+# ==========================================
+# Stage: Test (CI/CD 테스트용 이미지)
+# ==========================================
+FROM dev-deps AS test
+
+WORKDIR /app
+RUN mkdir /app/logs
+# 소스 및 테스트 코드 복사
+COPY ./src ./src
+COPY ./tests ./tests
+COPY .pre-commit-config.yaml .
+COPY pyproject.toml .
+
+# 테스트 실행을 위한 기본 설정 (필요시 오버라이드 가능)
+CMD ["poetry", "run", "pytest"]
 
 # ==========================================
 # Stage 4: Release (최종 배포용 이미지)
@@ -84,28 +100,13 @@ USER appuser
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ==========================================
-# Stage 5: Test (테스트 실행용 이미지)
-# ==========================================
-FROM dev-deps AS test
-
-# 가상환경 경로 설정
-ENV PATH="/app/.venv/bin:$PATH"
-
-# 소스 코드 복사
-COPY ./src ./src
-COPY ./tests ./tests
-
-# 테스트 실행
-CMD ["pytest"]
-
-# ==========================================
-# Stage 6: Dev (로컬 개발용 이미지)
+# Stage 5: Dev (로컬 개발용 이미지)
 # ==========================================
 FROM dev-deps AS dev
 
 # 개발 편의 도구 설치 (git, vim 등)
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates default-libmysqlclient-dev git wget procps git vim \
+    && apt-get install -y --no-install-recommends ca-certificates default-libmysqlclient-dev git wget procps vim \
     && rm -rf /var/lib/apt/lists/*
 RUN mkdir /app/scripts/
 COPY .github/ ./.github/
@@ -115,15 +116,9 @@ COPY ./.gitignore ./
 COPY ./.dockerignore ./
 COPY ./.pre-commit-config.yaml .
 COPY ./.gitmessage .
-# COPY ./.ssh /root/.ssh  <-- Removed
 # /////////////////////////////////////////////////////////////////
-# github SSH key 사용 (제거됨)
+# github SSH key 사용 (제거됨: 필요한 경우 볼륨 마운트 사용)
 # /////////////////////////////////////////////////////////////////
-# RUN git config --global core.editor "code --wait"
-# RUN git config --global user.email "chochyjj@gmail.com"
-# RUN git config --global user.name "Hyunyoun Jo"
-# RUN chmod 600 /root/.ssh/id_rsa
-# RUN chmod 600 /root/.ssh/id_rsa.pub
 # Command to run the application in development mode
 # --reload: Enables hot-reloading
 # CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
@@ -131,4 +126,4 @@ COPY ./.gitmessage .
 COPY ./src ./src
 
 # 개발 모드 실행 (Reload 옵션 활성화)
-CMD ["zsh", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -9,11 +9,6 @@ services:
     container_name: fastapi
     restart: unless-stopped
     working_dir: /app
-    expose:
-      - 8000
-    networks:
-      - project_net
-      - infra_net
     logging:
       driver: "json-file"
       options:
@@ -34,10 +29,23 @@ services:
     depends_on:
       - db
     environment:
-      - DB_HOST=db
+      - PROJECT_NAME=Test CI
+      - KAFKA_CONNECT_URL=http://localhost:8083
+      - TEMPO_EXPORTER=http://localhost:4317
+      - LOKI_URL=http://localhost:3100
+      - SCHEMA_REGISTRY_URL=http://localhost:8081
+      - KAFKA_REST_PROXY_URL=http://localhost:8082
+      - KAFKA_BROKERS=["localhost:9092"]
+      - OPENSEARCH_URL=http://localhost:9200
+      - OLLAMA_URL=http://localhost:11434
       - DB_USER=postgres
       - DB_PASSWORD=password
+      - DB_HOST=postgres
+      - DB_PORT_WRITE=5432
+      - DB_PORT_READ=5432
       - DB_NAME=app_db
+      - REDIS_URL=redis://localhost:6379
+      - N8N_URL=http://localhost:5678
     networks:
       - project_net
   db:
