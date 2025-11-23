@@ -1,9 +1,22 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "python template"
     DEBUG: bool = True
+    DEFAULT_PORT: int
+
+    # CORS 설정 (문자열 또는 리스트 허용)
+    CORS_ORIGINS: str | list[str] = []
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, (list, str)):
+            return v
+        raise ValueError(v)
 
     TEMPO_EXPORTER: str
     LOKI_URL: str

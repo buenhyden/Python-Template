@@ -11,19 +11,9 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+from src.api import router
 from src.core.config import settings
 from src.core.logger import app_logger
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Logger is already setup at module level
-    logger.info("Application startup complete")
-    yield
-    logger.info("Application shutdown")
-
-
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # ---------------------------------------------------------
 # A. Tempo (Tracing) 설정
@@ -42,9 +32,6 @@ otlp_exporter = OTLPSpanExporter(endpoint=settings.TEMPO_EXPORTER, insecure=True
 span_processor = BatchSpanProcessor(otlp_exporter)
 trace.get_tracer_provider().add_span_processor(span_processor)
 
-# FastAPI 자동 계측 (HTTP 요청 들어오면 자동으로 Trace 시작)
-FastAPIInstrumentor.instrument_app(app)
-
 # ---------------------------------------------------------
 # Logging 설정
 # ---------------------------------------------------------
@@ -56,19 +43,33 @@ logger = app_logger.setup(
     enable_loki=True,
 )
 
-# ---------------------------------------------------------
-# CORS 설정 (React 앱 연동)
-# ---------------------------------------------------------
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 운영 환경에서는 구체적인 도메인으로 변경 필요
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Logger is already setup at module level
+    logger.info("Application startup complete")
+    yield
+    logger.info("Application shutdown")
 
 
-@app.get("/")
-def read_root():
-    logger.info("Root endpoint accessed")
-    return {"Hello": "World"}
+def create_app() -> FastAPI:
+    app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+    # ---------------------------------------------------------
+    # CORS 설정 (React 앱 연동)
+    # ---------------------------------------------------------
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # 운영 환경에서는 구체적인 도메인으로 변경 필요
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    # FastAPI 자동 계측 (HTTP 요청 들어오면 자동으로 Trace 시작)
+    FastAPIInstrumentor.instrument_app(app)
+
+    # 라우터 등록 (Prefix: /api)
+    app.include_router(router, prefix="/api")
+    return app
+
+
+app = create_app()
