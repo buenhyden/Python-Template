@@ -31,3 +31,4 @@ archive.zip
 .history/
 .venv
 .env
+.ruff_cache
