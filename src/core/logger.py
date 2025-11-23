@@ -3,7 +3,12 @@ import os
 import sys
 from logging.handlers import RotatingFileHandler
 
-from logging_loki import LokiHandler
+# loki 라이브러리가 없을 경우를 대비한 처리 (선택사항)
+try:
+    from logging_loki import LokiHandler
+except ImportError:
+    LokiHandler = None
+
 from opentelemetry import trace
 
 
@@ -11,14 +16,16 @@ class AppLogger:
     def __init__(self, logger_name: str = "uvicorn"):
         self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.INFO)
+        if not any(isinstance(f, self._TraceIdFilter) for f in self.logger.filters):
+            self.logger.addFilter(self._TraceIdFilter())
 
     class _TraceIdFilter(logging.Filter):
         def filter(self, record):
             span = trace.get_current_span()
             if span:
-                trace_id = span.get_span_context().trace_id
-                if trace_id:
-                    record.trace_id = format(trace_id, "032x")
+                span_context = span.get_span_context()
+                if span_context != trace.INVALID_SPAN_CONTEXT:
+                    record.trace_id = format(span_context.trace_id, "032x")
                 else:
                     record.trace_id = "0"
             else:
@@ -46,13 +53,12 @@ class AppLogger:
             log_file_path: Path to the log file (default: logs/app.log).
         """
 
-        # Clear existing handlers to avoid duplicates if setup is called multiple times
+        # 기존 핸들러 정리 (중복 방지)
         if self.logger.hasHandlers():
             self.logger.handlers.clear()
 
-        # 공통 필터 인스턴스 하나 생성
+        # 핸들러에 부착할 필터 인스턴스 생성
         trace_filter = self._TraceIdFilter()
-        self.logger.addFilter(trace_filter)
 
         # 1. Console Handler
         if enable_console:

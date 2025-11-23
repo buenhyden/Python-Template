@@ -17,6 +17,7 @@ repos:
         args: [--markdown-linebreak-ext=md]
       - id: debug-statements
       - id: name-tests-test
+        exclude: ^tests/load/locustfile\.py$
       - id: requirements-txt-fixer
   - repo: https://github.com/google/yamlfmt
     rev: v0.19.0
