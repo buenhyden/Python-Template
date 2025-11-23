@@ -11,7 +11,6 @@ class AppLogger:
     def __init__(self, logger_name: str = "uvicorn"):
         self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.INFO)
-        self.logger.addFilter(self._TraceIdFilter())
 
     class _TraceIdFilter(logging.Filter):
         def filter(self, record):
@@ -51,6 +50,10 @@ class AppLogger:
         if self.logger.hasHandlers():
             self.logger.handlers.clear()
 
+        # 공통 필터 인스턴스 하나 생성
+        trace_filter = self._TraceIdFilter()
+        self.logger.addFilter(trace_filter)
+
         # 1. Console Handler
         if enable_console:
             console_handler = logging.StreamHandler(sys.stderr)
@@ -68,6 +71,7 @@ class AppLogger:
                 )
 
             console_handler.setFormatter(formatter)
+            console_handler.addFilter(trace_filter)  # ★ 여기 추가
             self.logger.addHandler(console_handler)
 
         # 2. File Handler
@@ -86,6 +90,7 @@ class AppLogger:
                 "%(asctime)s - %(name)s - %(levelname)s - [TraceID: %(trace_id)s] - %(message)s"
             )
             file_handler.setFormatter(formatter)
+            file_handler.addFilter(trace_filter)  # ★ 여기 추가
             self.logger.addHandler(file_handler)
 
         # 3. Loki Handler
@@ -95,6 +100,7 @@ class AppLogger:
                 tags={"application": service_name},
                 version="1",
             )
+            loki_handler.addFilter(trace_filter)  # ★ 여기 추가
             self.logger.addHandler(loki_handler)
         elif enable_loki and not loki_url:
             print("Warning: Loki logging enabled but no URL provided.")

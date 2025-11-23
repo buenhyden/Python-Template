@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,9 +13,6 @@ from contextlib import asynccontextmanager
 
 from src.core.config import settings
 from src.core.logger import app_logger
-
-
-logger = logging.getLogger("python_template")
 
 
 @asynccontextmanager
@@ -49,7 +44,6 @@ trace.get_tracer_provider().add_span_processor(span_processor)
 
 # FastAPI 자동 계측 (HTTP 요청 들어오면 자동으로 Trace 시작)
 FastAPIInstrumentor.instrument_app(app)
-
 
 # ---------------------------------------------------------
 # Logging 설정
