@@ -25,11 +25,11 @@ class AppLogger:
             if span:
                 span_context = span.get_span_context()
                 if span_context != trace.INVALID_SPAN_CONTEXT:
-                    record.trace_id = format(span_context.trace_id, "032x")  # type: ignore[attr-defined]
+                    record.trace_id = format(span_context.trace_id, "032x")
                 else:
-                    record.trace_id = "0"  # type: ignore[attr-defined]
+                    record.trace_id = "0"
             else:
-                record.trace_id = "0"  # type: ignore[attr-defined]
+                record.trace_id = "0"
             return True
 
     def setup(
@@ -68,7 +68,7 @@ class AppLogger:
             try:
                 from uvicorn.logging import DefaultFormatter
 
-                formatter = DefaultFormatter(  # type: ignore[assignment]
+                formatter = DefaultFormatter(
                     "%(levelprefix)s | %(asctime)s | %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S",
                 )
@@ -78,7 +78,7 @@ class AppLogger:
                 )
 
             console_handler.setFormatter(formatter)
-            console_handler.addFilter(trace_filter)  # ★ 여기 추가
+            console_handler.addFilter(trace_filter)
             self.logger.addHandler(console_handler)
 
         # 2. File Handler
@@ -89,15 +89,15 @@ class AppLogger:
 
             file_handler = RotatingFileHandler(
                 log_file_path,
-                maxBytes=10 * 1024 * 1024,  # 10MB
+                maxBytes=10 * 1024 * 1024,
                 backupCount=5,
                 encoding="utf-8",
             )
-            formatter = logging.Formatter(  # type: ignore[assignment]
+            formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - [TraceID: %(trace_id)s] - %(message)s"
             )
             file_handler.setFormatter(formatter)
-            file_handler.addFilter(trace_filter)  # ★ 여기 추가
+            file_handler.addFilter(trace_filter)
             self.logger.addHandler(file_handler)
 
         # 3. Loki Handler
@@ -107,13 +107,9 @@ class AppLogger:
                 tags={"application": service_name},
                 version="1",
             )
-            loki_handler.addFilter(trace_filter)  # ★ 여기 추가
+            loki_handler.addFilter(trace_filter)
             self.logger.addHandler(loki_handler)
         elif enable_loki and not loki_url:
             print("Warning: Loki logging enabled but no URL provided.")
 
         return self.logger
-
-
-# Singleton instance
-app_logger = AppLogger()
