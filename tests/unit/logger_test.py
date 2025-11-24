@@ -121,7 +121,7 @@ def test_trace_id_filter_logic():
 
         # 기대값: 소문자 32자리 16진수
         expected_trace_id = "1234567890abcdef1234567890abcdef"
-        assert record.trace_id == expected_trace_id
+        assert record.trace_id == expected_trace_id  # type: ignore[attr-defined]
 
 
 def test_trace_id_filter_no_span():
@@ -136,4 +136,4 @@ def test_trace_id_filter_no_span():
         trace_filter = AppLogger._TraceIdFilter()
         trace_filter.filter(record)
 
-        assert record.trace_id == "0"
+        assert record.trace_id == "0"  # type: ignore[attr-defined]

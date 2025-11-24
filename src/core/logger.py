@@ -20,16 +20,16 @@ class AppLogger:
             self.logger.addFilter(self._TraceIdFilter())
 
     class _TraceIdFilter(logging.Filter):
-        def filter(self, record):
+        def filter(self, record: logging.LogRecord) -> bool:
             span = trace.get_current_span()
             if span:
                 span_context = span.get_span_context()
                 if span_context != trace.INVALID_SPAN_CONTEXT:
-                    record.trace_id = format(span_context.trace_id, "032x")
+                    record.trace_id = format(span_context.trace_id, "032x")  # type: ignore[attr-defined]
                 else:
-                    record.trace_id = "0"
+                    record.trace_id = "0"  # type: ignore[attr-defined]
             else:
-                record.trace_id = "0"
+                record.trace_id = "0"  # type: ignore[attr-defined]
             return True
 
     def setup(
@@ -64,10 +64,11 @@ class AppLogger:
         if enable_console:
             console_handler = logging.StreamHandler(sys.stderr)
             # Use uvicorn's default formatter if available, else standard
+            formatter: logging.Formatter
             try:
                 from uvicorn.logging import DefaultFormatter
 
-                formatter = DefaultFormatter(
+                formatter = DefaultFormatter(  # type: ignore[assignment]
                     "%(levelprefix)s | %(asctime)s | %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S",
                 )
@@ -92,7 +93,7 @@ class AppLogger:
                 backupCount=5,
                 encoding="utf-8",
             )
-            formatter = logging.Formatter(
+            formatter = logging.Formatter(  # type: ignore[assignment]
                 "%(asctime)s - %(name)s - %(levelname)s - [TraceID: %(trace_id)s] - %(message)s"
             )
             file_handler.setFormatter(formatter)

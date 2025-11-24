@@ -1,7 +1,12 @@
 name: Backend CI
 on:
   push:
-    branches: ["main", "master"]
+    branches:
+      - "main"
+      - "master"
+      - "develop"
+      - "release/**"
+      - "hotfix/**"
     paths:
       - "src/**"
       - "tests/**"
@@ -10,7 +15,10 @@ on:
       - "docker-compose.test.yml"
       - "docker-compose.yml"
   pull_request:
-    branches: ["main", "master"]
+    branches:
+      - "main"
+      - "master"
+      - "develop"
     paths:
       - "src/**"
       - "tests/**"
