@@ -24,6 +24,9 @@ services:
     working_dir: /app
     environment:
       - PROJECT_NAME=Test CI
+      - DEFAULT_PORT=8000
+      - DEFAULT_HOST_PORT=8000
+      - CORS_ORIGINS=["*"]
       - KAFKA_CONNECT_URL=http://localhost:8083
       - TEMPO_EXPORTER=http://localhost:4317
       - LOKI_URL=http://localhost:3100
