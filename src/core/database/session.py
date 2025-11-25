@@ -1,29 +1,22 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from src.core.config import settings
 
-# Write DB Session
-SQLALCHEMY_DATABASE_WRITE_URL = (
-    f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}"
-    f"@{settings.DB_HOST}:{settings.DB_PORT_WRITE}/{settings.DB_NAME}"
-)
+engine_write = create_engine(settings.SQLALCHEMY_DATABASE_WRITE_URL, pool_pre_ping=True)
+engine_read = create_engine(settings.SQLALCHEMY_DATABASE_READ_URL, pool_pre_ping=True)
 
-# Read DB Session
-SQLALCHEMY_DATABASE_READ_URL = (
-    f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}"
-    f"@{settings.DB_HOST}:{settings.DB_PORT_READ}/{settings.DB_NAME}"
-)
+session_local_write = sessionmaker(autocommit=False, autoflush=False, bind=engine_write)
+session_local_read = sessionmaker(autocommit=False, autoflush=False, bind=engine_read)
 
-engine_write = create_engine(SQLALCHEMY_DATABASE_WRITE_URL, pool_pre_ping=True)
-engine_read = create_engine(SQLALCHEMY_DATABASE_READ_URL, pool_pre_ping=True)
 
-SessionLocalWrite = sessionmaker(autocommit=False, autoflush=False, bind=engine_write)
-SessionLocalRead = sessionmaker(autocommit=False, autoflush=False, bind=engine_read)
+class Base(DeclarativeBase):
+    pass
 
 
 def get_write_db():
-    db = SessionLocalWrite()
+    """Write DB Session"""
+    db = session_local_write()
     try:
         yield db
     finally:
@@ -31,7 +24,8 @@ def get_write_db():
 
 
 def get_read_db():
-    db = SessionLocalRead()
+    """Read DB Session"""
+    db = session_local_read()
     try:
         yield db
     finally:

@@ -19,20 +19,24 @@ services:
       context: .
       dockerfile: Dockerfile
       target: test
-    image: python-template-test
-    container_name: python-template-test
-    working_dir: /app
     environment:
       - PROJECT_NAME=Test CI
+      - DEBUG=True
       - DEFAULT_PORT=8000
       - DEFAULT_HOST_PORT=8000
-      - CORS_ORIGINS=["*"]
+      - SECRET_KEY="test"
+      - ADMIN_USERNAME="admin"
+      - ADMIN_PASSWORD="test"
+      - ALGORITHM="HS256"
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - CORS_ORIGINS='["*"]'
+      - TOKEN_URL="api/v1/auth/login"
       - KAFKA_CONNECT_URL=http://localhost:8083
       - TEMPO_EXPORTER=http://localhost:4317
       - LOKI_URL=http://localhost:3100
       - SCHEMA_REGISTRY_URL=http://localhost:8081
       - KAFKA_REST_PROXY_URL=http://localhost:8082
-      - KAFKA_BROKERS=["localhost:9092"]
+      - KAFKA_BROKERS=["kafka:9092"]
       - OPENSEARCH_URL=http://localhost:9200
       - OLLAMA_URL=http://localhost:11434
       - DB_USER=postgres
@@ -41,12 +45,16 @@ services:
       - DB_PORT_WRITE=5432
       - DB_PORT_READ=5432
       - DB_NAME=app_db
-      - REDIS_URL=redis://localhost:6379
+      - REDIS_URL=redis://redis:6379
       - N8N_URL=http://localhost:5678
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
-  db:
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+  postgres:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
@@ -59,3 +67,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

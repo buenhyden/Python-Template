@@ -40,7 +40,7 @@ def test_setup_console_logging(app_logger):
 def test_setup_file_logging(app_logger):
     # patch를 사용하여 파일 시스템 접근을 차단합니다.
     with (
-        patch("src.core.logger.RotatingFileHandler") as mock_handler,
+        patch("src.core.logger.app_logger.RotatingFileHandler") as mock_handler,
         patch("os.makedirs") as mock_makedirs,
     ):
         logger = app_logger.setup(
@@ -60,7 +60,7 @@ def test_setup_file_logging(app_logger):
 def test_setup_custom_file_path(app_logger):
     custom_path = "custom_logs/custom.log"
     with (
-        patch("src.core.logger.RotatingFileHandler") as mock_handler,
+        patch("src.core.logger.app_logger.RotatingFileHandler") as mock_handler,
         patch("os.makedirs") as mock_makedirs,
     ):
         app_logger.setup(
@@ -80,7 +80,7 @@ def test_setup_custom_file_path(app_logger):
 def test_setup_loki_logging(app_logger):
     fake_url = "http://mock-loki-url:3100"
     # LokiHandler가 설치되지 않았을 수도 있으므로 조건부 Patch
-    with patch("src.core.logger.LokiHandler", create=True) as mock_loki:
+    with patch("src.core.logger.app_logger.LokiHandler", create=True) as mock_loki:
         logger = app_logger.setup(
             service_name="test_service",
             loki_url=fake_url,
@@ -105,7 +105,7 @@ def test_trace_id_filter_logic():
     mock_span.get_span_context.return_value.trace_id = 0x1234567890ABCDEF1234567890ABCDEF
 
     # OpenTelemetry의 trace 모듈을 Mocking
-    with patch("src.core.logger.trace") as mock_trace:
+    with patch("src.core.logger.app_logger.trace") as mock_trace:
         mock_trace.get_current_span.return_value = mock_span
         # INVALID_SPAN_CONTEXT 비교를 위해 Mock 설정
         mock_trace.INVALID_SPAN_CONTEXT = MagicMock()
@@ -126,7 +126,7 @@ def test_trace_id_filter_logic():
 
 def test_trace_id_filter_no_span():
     """Span이 없을 때 기본값 0이 설정되는지 확인"""
-    with patch("src.core.logger.trace") as mock_trace:
+    with patch("src.core.logger.app_logger.trace") as mock_trace:
         mock_trace.get_current_span.return_value = None
 
         record = logging.LogRecord(

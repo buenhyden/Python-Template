@@ -6,31 +6,38 @@
     version    ="0.1.0"
 
     [tool.poetry.dependencies]
+        aiokafka                             ="^0.12.0"
+        asgi-correlation-id                  ="^4.3.4"
         asyncpg                              ="^0.30.0"
+        bcrypt                               ="4.0.1"
         confluent-kafka                      ="^2.12.2"
-        fastapi                              ="^0.121.3"
+        fastapi                              ={extras=["standard"], version="^0.121.3"}
         httpx                                ="^0.28.1"
+        numpy                                ="<2.3.0"
+        opencv-python-headless               ="^4.12.0.88"
         opensearch-py                        ="^3.1.0"
         opentelemetry-api                    ="^1.38.0"
         opentelemetry-exporter-otlp          ="^1.38.0"
         opentelemetry-instrumentation-fastapi="^0.59b0"
         opentelemetry-sdk                    ="^1.38.0"
+        passlib                              ={extras=["bcrypt"], version="^1.7.4"}
         protobuf                             ="^6.33.1"
         psycopg2-binary                      ="^2.9.11"
         pydantic                             ="^2.12.4"
         pydantic-settings                    ="^2.12.0"
         python                               ="^3.12"
+        python-dotenv                        ="^1.2.1"
+        python-jose                          ={extras=["cryptography"], version="^3.5.0"}
         python-logging-loki                  ="^0.3.1"
         python-multipart                     ="^0.0.20"
         redis                                ="^7.1.0"
         requests                             ="^2.32.5"
         sqlalchemy                           ="^2.0.44"
-        uvicorn                              ="^0.38.0"
-    python-dotenv = "^1.2.1"
+        uvicorn                              ={extras=["standard"], version="^0.38.0"}
+        yt-dlp                               ="^2025.11.12"
 
 
     [tool.poetry.group.dev.dependencies]
-        mypy          ="^1.14.1"
         pre-commit    ="^4.5.0"
         pytest        ="^9.0.1"
         pytest-asyncio="^1.3.0"
@@ -60,16 +67,18 @@
     [tool.ruff.format]
         indent-style="space"
         quote-style ="double"
+        [tool.ruff.lint.flake8-bugbear]
+            # FastAPI의 의존성 주입 함수들을 "불변 호출(immutable calls)"로 간주하여 B008 경고 제외
+            extend-immutable-calls=[
+                "fastapi.Body",
+                "fastapi.Cookie",
+                "fastapi.Depends",
+                "fastapi.Header",
+                "fastapi.Path",
+                "fastapi.Query",
+                "fastapi.Security",
+            ]
 
 [tool.pytest.ini_options]
     addopts  ="--ignore=tests/unit/logger_test.py --ignore=tests/load/"
     testpaths=["tests"]
-
-# --- Mypy 설정 (Static Type Checker) ---
-[tool.mypy]
-    python_version         ="3.12"
-    warn_return_any        =true
-    warn_unused_configs    =true
-    disallow_untyped_defs  =false
-    check_untyped_defs     =true
-    ignore_missing_imports =true
