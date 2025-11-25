@@ -33,7 +33,7 @@ class CacheClient:
     async def stop(self):
         """앱 종료 시 연결 해제"""
         if self.redis_client:
-            await self.redis_client.close()
+            await self.redis_client.aclose()
             logger.info("Redis Cache disconnected.")
 
     async def get(self, key: str) -> Any:
