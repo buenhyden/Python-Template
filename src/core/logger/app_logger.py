@@ -13,12 +13,6 @@ from opentelemetry import trace
 
 
 class AppLogger:
-    def __init__(self, logger_name: str = "uvicorn"):
-        self.logger = logging.getLogger(logger_name)
-        self.logger.setLevel(logging.INFO)
-        if not any(isinstance(f, self._TraceIdFilter) for f in self.logger.filters):
-            self.logger.addFilter(self._TraceIdFilter())
-
     class _TraceIdFilter(logging.Filter):
         def filter(self, record: logging.LogRecord) -> bool:
             span = trace.get_current_span()
@@ -40,6 +34,7 @@ class AppLogger:
         enable_file: bool = True,
         enable_loki: bool = False,
         log_file_path: str = "logs/app.log",
+        log_level: int = logging.INFO,
     ) -> logging.Logger:
         """
         Setup and return the configured logger.
@@ -53,9 +48,13 @@ class AppLogger:
             log_file_path: Path to the log file (default: logs/app.log).
         """
 
-        # 기존 핸들러 정리 (중복 방지)
-        if self.logger.hasHandlers():
-            self.logger.handlers.clear()
+        # 루트 로거 가져오기 (이름 없이 호출)
+        root_logger = logging.getLogger()
+        root_logger.setLevel(log_level)
+
+        # 기존 핸들러 초기화 (중복 방지)
+        if root_logger.hasHandlers():
+            root_logger.handlers.clear()
 
         # 핸들러에 부착할 필터 인스턴스 생성
         trace_filter = self._TraceIdFilter()
@@ -79,7 +78,7 @@ class AppLogger:
 
             console_handler.setFormatter(formatter)
             console_handler.addFilter(trace_filter)  # ★ 여기 추가
-            self.logger.addHandler(console_handler)
+            root_logger.addHandler(console_handler)
 
         # 2. File Handler
         if enable_file:
@@ -98,7 +97,7 @@ class AppLogger:
             )
             file_handler.setFormatter(formatter)
             file_handler.addFilter(trace_filter)  # ★ 여기 추가
-            self.logger.addHandler(file_handler)
+            root_logger.addHandler(file_handler)
 
         # 3. Loki Handler
         if enable_loki and loki_url:
@@ -108,8 +107,8 @@ class AppLogger:
                 version="1",
             )
             loki_handler.addFilter(trace_filter)  # ★ 여기 추가
-            self.logger.addHandler(loki_handler)
+            root_logger.addHandler(loki_handler)
         elif enable_loki and not loki_url:
             print("Warning: Loki logging enabled but no URL provided.")
 
-        return self.logger
+        return root_logger

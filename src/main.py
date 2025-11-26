@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from asgi_correlation_id import CorrelationIdMiddleware
@@ -26,14 +27,17 @@ from src.core.message_broker import kafka_producer
 # ---------------------------------------------------------
 # Logging 설정
 # ---------------------------------------------------------
-app_logger = AppLogger(logger_name="app")
-logger = app_logger.setup(
+app_logger = AppLogger()
+app_logger.setup(
     service_name=settings.PROJECT_NAME,
     loki_url=settings.LOKI_URL,
     enable_console=True,
     enable_file=True,
     enable_loki=False,
 )
+logger = logging.getLogger(__name__)
+
+
 # ---------------------------------------------------------
 # A. Tempo (Tracing) 설정
 # ---------------------------------------------------------
@@ -140,4 +144,4 @@ app.include_router(router, prefix="/api")
 @app.get("/")
 async def root():
     logger.info("Root endpoint access")
-    return {"message": "Welcome to Video Portfolio API with Enhanced Logging"}
+    return {"message": "Welcome to Python Template with Enhanced Logging"}
