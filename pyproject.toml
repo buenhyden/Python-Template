@@ -29,7 +29,6 @@
 
 [tool.uv]
     package=false
-    preview=true
 
 [tool.ruff]
     line-length   =120
