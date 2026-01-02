@@ -2,17 +2,17 @@
 
 **깃허브 템플릿 저장소로 사용할 수 있는 Python FastAPI 프로젝트 템플릿**
 
-이 템플릿은 Poetry, Docker, Linting, Pre-commit Hooks, CI/CD가 미리 구성되어 있어 즉시 사용 가능한 프로젝트 기반을 제공합니다. **Git Flow**를 적용한 새 프로젝트를 시작할 때 최적화된 설정입니다.
+이 템플릿은 uv, Docker, Linting, Pre-commit Hooks, CI/CD가 미리 구성되어 있어 즉시 사용 가능한 프로젝트 기반을 제공합니다. **Git Flow**를 적용한 새 프로젝트를 시작할 때 최적화된 설정입니다.
 
 ---
 
 ## ✨ 주요 기능
 
 - **🚀 FastAPI**: 고성능 비동기 웹 프레임워크
-- **📦 Poetry**: 현대적인 의존성 관리 및 패키징
+- **⚡ uv**: Rust로 작성된 초고속 Python 패키지 관리자
 - **🐳 Docker**: 컨테이너화된 개발 및 배포 환경
 - **⚡ Ruff**: 빠른 Python 린터 및 코드 포매터
-- **�🔒 Pre-commit**: 자동화된 Git hooks로 코드 품질 보장
+- **🔒 Pre-commit**: 자동화된 Git hooks로 코드 품질 보장
 - **✅ Pytest**: 강력한 테스트 프레임워크
 - **🔄 CI/CD**: Git Flow 지원 GitHub Actions 워크플로우
 
@@ -22,7 +22,7 @@
 
 - **Python** 3.12 이상
 - **Docker** 및 **Docker Compose**
-- **Poetry** (의존성 관리)
+- **uv** (의존성 관리)
 - **Git** (버전 관리)
 
 ---
@@ -40,15 +40,24 @@ GitHub에서 이 저장소를 템플릿으로 사용하여 새 프로젝트를 �
 ### 2. 로컬 개발 환경 설정
 
 ```bash
+# uv 설치 (macOS/Linux)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# uv 설치 (Windows)
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
 # 새로 생성한 저장소 클론
 git clone <your-repository-url>
 cd <your-project-name>
 
-# Poetry를 사용하여 의존성 설치
-poetry install
+# 의존성 동기화 (가상환경 자동 생성)
+uv sync
 
-# 가상 환경 활성화
-poetry shell
+# 가상 환경 활성화 (선택 사항, uv run 사용 시 불필요)
+# macOS/Linux
+source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
 
 # Pre-commit hooks 설치
 pre-commit install
@@ -103,8 +112,8 @@ GitHub Actions는 다음 브랜치에서 자동으로 실행됩니다:
 ### 로컬 실행
 
 ```bash
-# 애플리케이션 시작
-uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+# 애플리케이션 시작 (uv run 사용)
+uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### Docker로 실행
@@ -129,26 +138,26 @@ docker-compose up --build
 
 ```bash
 # 모든 테스트 실행
-pytest
+uv run pytest
 
 # 특정 테스트 파일 실행
-pytest tests/unit/test_example.py
+uv run pytest tests/unit/test_example.py
 
 # 커버리지 포함
-pytest --cov=src
+uv run pytest --cov=src
 ```
 
 ### 린팅 및 포매팅
 
 ```bash
 # Ruff로 린트 검사 및 자동 수정
-ruff check . --fix
+uv run ruff check . --fix
 
 # 코드 포매팅
-ruff format .
+uv run ruff format .
 
 # Mypy로 타입 검사
-mypy src/
+uv run mypy src/
 
 # Pre-commit으로 모든 검사 실행
 pre-commit run --all-files
@@ -181,8 +190,8 @@ pre-commit run --all-files
 ├── Dockerfile              # 🐳 Docker 이미지 정의
 ├── docker-compose.yml      # 🐙 Docker Compose 구성
 ├── docker-compose.test.yml # 🧪 테스트용 Docker Compose
-├── poetry.lock             # 📌 잠긴 의존성 버전
-├── pyproject.toml          # 📦 Poetry 및 도구 설정
+├── uv.lock                 # 📌 잠긴 의존성 버전 (uv)
+├── pyproject.toml          # 📦 프로젝트 및 도구 설정
 └── README.md               # 📖 이 문서
 ```
 
@@ -191,7 +200,7 @@ pre-commit run --all-files
 ## 🔧 설정 파일 개요
 
 ### `pyproject.toml`
-- Poetry 의존성 및 메타데이터
+- uv 의존성 및 메타데이터
 - Ruff 린팅 및 포매팅 규칙
 - Mypy 타입 검사 설정
 - Pytest 테스트 옵션

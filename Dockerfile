@@ -1,21 +1,19 @@
 # === Stage 1: "base" (공통 기반) ===
 FROM python:3.12-slim as base
 LABEL version="0.1" creator="chochyjj@gmail.com" description="Python 3.12"
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 # Prevent Python from writing .pyc files
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.8.3 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
     TZ=Asia/Seoul
 
 # 1. Timezone 설정
 RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # 2. 시스템 의존성 설치 (빌드 및 런타임 공통)
-# gcc, libmysqlclient-dev 등은 Python 패키지 컴파일(빌드)에 필수입니다.
-# 런타임 시에는 가벼운 라이브러리만 필요하더라도, 빌드 단계(base)에서는 dev 패키지가 필요합니다.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     curl \
@@ -23,10 +21,6 @@ RUN apt-get update \
     default-libmysqlclient-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
-
-# 3. Poetry 설치
-ENV PATH="$POETRY_HOME/bin:$PATH"
-RUN pip install "poetry==$POETRY_VERSION"
 
 WORKDIR /app
 
@@ -36,10 +30,14 @@ WORKDIR /app
 FROM base AS prod-deps
 
 # 의존성 파일 복사 (캐싱 활용)
-COPY ./pyproject.toml ./poetry.lock ./
+COPY ./pyproject.toml ./uv.lock ./
 
 # 프로덕션 의존성만 설치 (.venv 생성)
-RUN poetry install --no-root --only main
+# --frozen: lock 파일과 불일치시 에러
+# --no-install-project: 프로젝트 자체는 설치하지 않음 (의존성만)
+# --no-dev: 개발용 의존성 제외
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project --no-dev
 
 # ==========================================
 # Stage 3: Development Dependencies (개발 의존성 빌드)
@@ -47,7 +45,8 @@ RUN poetry install --no-root --only main
 FROM prod-deps AS dev-deps
 
 # 개발 의존성 포함 전체 설치
-RUN poetry install --no-root
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project
 
 # ==========================================
 # Stage: Test (CI/CD 테스트용 이미지)
@@ -62,8 +61,12 @@ COPY ./tests ./tests
 COPY .pre-commit-config.yaml .
 COPY pyproject.toml .
 
+# 프로젝트 자체 설치 (소스 코드 변경 시 재빌드 최소화를 위해 여기서 수행)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
+
 # 테스트 실행을 위한 기본 설정 (필요시 오버라이드 가능)
-CMD ["poetry", "run", "pytest"]
+CMD ["uv", "run", "pytest"]
 
 # ==========================================
 # Stage 4: Release (최종 배포용 이미지)
@@ -77,7 +80,6 @@ ENV VIRTUAL_ENV=/app/.venv \
     TZ=Asia/Seoul
 
 # 1. 런타임 시스템 라이브러리 및 Timezone 설정
-# (빌드 도구는 제외하고 실행에 필요한 라이브러리만 설치하여 경량화)
 RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -116,14 +118,13 @@ COPY ./.gitignore ./
 COPY ./.dockerignore ./
 COPY ./.pre-commit-config.yaml .
 COPY ./.gitmessage .
-# /////////////////////////////////////////////////////////////////
-# github SSH key 사용 (제거됨: 필요한 경우 볼륨 마운트 사용)
-# /////////////////////////////////////////////////////////////////
-# Command to run the application in development mode
-# --reload: Enables hot-reloading
-# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# 프로젝트 설치 (Editable 모드 등 필요시 설정 가능하지만, 로컬 볼륨 마운트가 일반적임)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
+
 # 소스 코드 복사 (Docker Compose 볼륨 마운트 사용 시 덮어씌워짐)
 COPY ./src ./src
 
 # 개발 모드 실행 (Reload 옵션 활성화)
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
