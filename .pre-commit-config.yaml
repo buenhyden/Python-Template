@@ -39,18 +39,17 @@ repos:
       - id: ruff
         args: [--fix]
       - id: ruff-format
-  - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
-    hooks:
-      - id: interrogate
-        # pyproject.toml의 설정을 기반으로 문서화율 검사
-
-        args: [-vv, --style=google]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.14.1
     hooks:
       - id: mypy
-        additional_dependencies: ["pydantic>=2.12.5", "types-requests"]
+        additional_dependencies:
+          - "pydantic>=2.12.5" # Pydantic 모델 인식
+          - "httpx>=0.28.1" # 비동기 클라이언트 인식
+          - "types-requests" # requests 관련 스터브
+          - "types-python-dateutil" # 시간 관련 스터브
+          - "types-PyYAML" # YAML 설정 파일 스터브
+        args: [--config-file=pyproject.toml]
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
@@ -65,3 +64,16 @@ repos:
         language: system
         files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit
+        entry: uv run pip-audit
+        language: system
+        files: ^pyproject\.toml$
+        pass_filenames: false
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.1.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg] # 커밋 메시지 작성 단계에서 실행

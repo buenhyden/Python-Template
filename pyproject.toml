@@ -13,14 +13,16 @@
 
 [dependency-groups]
     dev=[
+        "commitizen>=4.11.0",
         "detect-secrets>=1.5.0",
         "httpx>=0.28.1",
-        "interrogate>=1.7.0",
         "mypy>=1.19.1",
         "pip-audit>=2.10.0",
         "pre-commit>=4.5.1",
         "pytest-asyncio>=1.3.0",
         "pytest-cov>=7.0.0",
+        "pytest-html>=4.1.1",
+        "pytest-metadata>=3.1.1",
         "pytest-mock>=3.15.1",
         "pytest-xdist>=3.8.0",
         "pytest>=9.0.2",
@@ -31,12 +33,12 @@
 
 
 [tool.uv]
-    package=false
-
+    managed              =true
+    override-dependencies=["py>=1.11.0"]
+    package              =false
 [tool.ruff]
     line-length   =120
     target-version="py313"
-
     [tool.ruff.lint]
         ignore=[]
         select=[
@@ -54,6 +56,7 @@
             "I",     # isort: Import sorting
             "LOG",   # 로깅 가이드 준수
             "N",     # pep8-naming: Standard naming conventions
+            "NPY",   # NumPy 전용 규칙 추가
             "PERF",  # 성능 최적화
             "PL",    # Pylint (파이린트 규칙)
             "PT",    # flake8-pytest-style: Better pytest practices
@@ -74,6 +77,10 @@
             "app/core/config/settings.py"=["S105", "S106"]
             "tests/**/*"                 =["S101", "S105", "S106", "S110"]
 
+        [tool.ruff.lint.extend-per-file-ignores]
+            "app/core/config/settings.py"=["S105", "S106"]
+            "tests/**/*"                 =["D100", "D101", "D102", "D103", "D104"]
+
         [tool.ruff.lint.isort]
             known-first-party=["app"]
 
@@ -89,6 +96,7 @@
             ]
         [tool.ruff.lint.mccabe]
             max-complexity=10 # 복잡도 임계값 설정 (보통 10 이하 권장)
+
 
     [tool.ruff.format]
         indent-style="space"
@@ -112,12 +120,6 @@
         allow_untyped_defs=true
         module            ="tests.*"
 
-[tool.interrogate]
-    exclude           =["docs", "tests"]
-    fail-under        =90                # 문서화율이 90% 미만이면 빌드 실패
-    ignore-init-method=true
-    ignore-magic      =false
-
 [tool.pydantic-mypy]
     init_forbid_extra            =true
     init_typed                   =true
@@ -131,9 +133,19 @@
     fail_under  =80   # 커버리지가 80% 미만이면 에러 발생 (품질 강제)
     show_missing=true
 
+[tool.commitizen]
+    major_version_zero      =true
+    name                    ="cz_conventional_commits"
+    tag_format              ="v$version"
+    update_changelog_on_bump=true
+    version_provider        ="pep621"
+    version_scheme          ="semver"
 
 [tool.pytest.ini_options]
-    addopts  ="--ignore=tests/load/ --cov=app --cov-report=term-missing"
+    # -n auto: 코어 수에 맞춰 병렬 실행
+    # --html=report.html: 결과 보고서 생성
+    # --self-contained-html: CSS를 포함한 단일 파일 생성
+    addopts  ="--ignore=tests/load/ --cov=app --cov-report=term-missing -n auto --html=report.html --self-contained-html"
     testpaths=["tests"]
     # 비동기 테스트 모드 자동 설정 (Strict 모드 권장)
     asyncio_default_fixture_loop_scope="function"
