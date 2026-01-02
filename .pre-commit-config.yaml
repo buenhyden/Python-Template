@@ -59,3 +59,25 @@ repos:
         args: [--fix]
       - id: ruff-format
         # Run the formatter.
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1 # 최신 버전 확인 권장
+    hooks:
+      - id: mypy
+        additional_dependencies: ["pydantic>=2.12.5", # Pydantic 타입 인식을 위해 필요
+          "types-requests", # 사용하는 라이브러리의 stub 패키지 추가
+        ]
+        # pyproject.toml의 설정을 따르도록 구성
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: uv.lock # 제외할 파일 설정
+  - repo: local
+    hooks:
+      - id: uv-lock-check
+        name: uv-lock-check
+        entry: uv lock --check
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
