@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    image: python:latest
+    image: python:3.13-slim
     hostname: fastapi
     container_name: fastapi
     restart: unless-stopped
