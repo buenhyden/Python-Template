@@ -1,6 +1,6 @@
 # === Stage 1: "base" (공통 기반) ===
-FROM python:3.12-slim as base
-LABEL version="0.1" creator="chochyjj@gmail.com" description="Python 3.12"
+FROM python:3.13-slim as base
+LABEL version="0.1" creator="chochyjj@gmail.com" description="Python 3.13"
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Prevent Python from writing .pyc files
@@ -71,7 +71,7 @@ CMD ["uv", "run", "pytest"]
 # ==========================================
 # Stage 4: Release (최종 배포용 이미지)
 # ==========================================
-FROM python:3.12-slim AS release
+FROM python:3.13-slim AS release
 
 # 런타임 환경 변수
 ENV VIRTUAL_ENV=/app/.venv \

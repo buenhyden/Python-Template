@@ -3,33 +3,59 @@ repos:
     rev: v4.6.0
     hooks:
       - id: check-json
-        # stages: [commit]  <-- (삭제됨) 기본값이므로 생략 가능
+        # Verifies that JSON files are valid.
       - id: pretty-format-json
+        # Format JSON files.
+
         args: [--autofix, --indent=2, --no-ensure-ascii, --no-sort-keys]
       - id: check-added-large-files
+        # Prevent giant files from being committed.
+
         args: [--maxkb=500000]
       - id: check-case-conflict
+        # Check for files that would conflict in case-insensitive filesystems.
       - id: check-merge-conflict
+        # Check for files that contain merge conflict strings.
       - id: check-yaml
+        # Verifies that YAML files are valid.
+      - id: check-toml
+        # Verifies that TOML files are valid.
       - id: end-of-file-fixer
+        # Ensures that a file is either empty, or ends with one newline.
       - id: mixed-line-ending
+        # Replaces or checks mixed line ending.
       - id: trailing-whitespace
+        # Trims trailing whitespace.
+
         args: [--markdown-linebreak-ext=md]
       - id: debug-statements
+        # Check for debugger imports and py37+ `breakpoint()` calls in python source.
       - id: name-tests-test
+        # Verify that test files are named correctly.
+
         exclude: ^tests/load/locustfile\.py$
       - id: requirements-txt-fixer
+        # Sorts entries in requirements.txt.
   - repo: https://github.com/google/yamlfmt
     rev: v0.19.0
     hooks:
       - id: yamlfmt
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
+        # Format YAML files.
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        # Check for common misspellings in text files.
+
+        additional_dependencies:
+          - tomli
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     # An extremely fast Python linter and code formatter, written in Rust.
 
-    rev: "v0.14.5"
+    rev: "v0.14.10"
     hooks:
       # Run the linter.
-      - id: ruff-check
+      - id: ruff
         args: [--fix]
       - id: ruff-format
         # Run the formatter.

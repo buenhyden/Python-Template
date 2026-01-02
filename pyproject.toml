@@ -1,18 +1,66 @@
+[build-system]
+    build-backend="hatchling.build"
+    requires     =["hatchling"]
+
 [project]
-name = "python-template"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "pydantic>=2.12.5",
-]
+    authors        =[{name="hyunyoun", email="chochyjj@gmail.com"}]
+    dependencies   =["pydantic>=2.12.5"]
+    description    ="Add your description here"
+    name           ="python-template"
+    readme         ="README.md"
+    requires-python=">=3.13"
+    version        ="0.1.0"
 
 [dependency-groups]
-dev = [
-    "httpx>=0.28.1",
-    "pre-commit>=4.5.1",
-    "pytest>=9.0.2",
-    "pytest-asyncio>=1.3.0",
-    "ruff>=0.14.10",
-]
+    dev=[
+        "httpx>=0.28.1",
+        "pre-commit>=4.5.1",
+        "pytest-asyncio>=1.3.0",
+        "pytest>=9.0.2",
+        "ruff>=0.14.10",
+    ]
+[tool.uv]
+    package=false
+
+[tool.ruff]
+    line-length   =120
+    target-version="py313"
+
+    [tool.ruff.lint]
+        ignore=[]
+        select=[
+            "A",   # flake8-builtins: Avoid shadowing builtins
+            "B",   # flake8-bugbear: Design problems
+            "C4",  # flake8-comprehensions: Better comprehensions
+            "E",   # pycodestyle errors
+            "F",   # Pyflakes: Logic errors
+            "I",   # isort: Import sorting
+            "N",   # pep8-naming: Standard naming conventions
+            "PT",  # flake8-pytest-style: Better pytest practices
+            "RUF", # Ruff-specific rules
+            "S",   # flake8-bandit: Security checks
+            "SIM", # flake8-simplify: Code simplification
+            "UP",  # pyupgrade: Upgrade syntax
+        ]
+
+        [tool.ruff.lint.isort]
+            known-first-party=["src"]
+
+    [tool.ruff.format]
+        indent-style="space"
+        quote-style ="double"
+
+        [tool.ruff.lint.flake8-bugbear]
+            extend-immutable-calls=[
+                "fastapi.Body",
+                "fastapi.Cookie",
+                "fastapi.Depends",
+                "fastapi.Header",
+                "fastapi.Path",
+                "fastapi.Query",
+                "fastapi.Security",
+            ]
+
+[tool.pytest.ini_options]
+    addopts  ="--ignore=tests/load/"
+    testpaths=["tests"]
