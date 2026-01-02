@@ -55,7 +55,7 @@ services:
       kafka:
         condition: service_started
   postgres:
-    image: postgres:15
+    image: postgres:17-bookworm
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password

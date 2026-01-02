@@ -1,271 +1,176 @@
-# 🐍 Python FastAPI Template
+# Python Template
 
-**깃허브 템플릿 저장소로 사용할 수 있는 Python FastAPI 프로젝트 템플릿**
+**FastAPI**, **uv**, **Docker**를 기반으로 한 강력하고 현대적인 프로덕션 레벨의 Python 프로젝트 템플릿입니다.
 
-이 템플릿은 uv, Docker, Linting, Pre-commit Hooks, CI/CD가 미리 구성되어 있어 즉시 사용 가능한 프로젝트 기반을 제공합니다. **Git Flow**를 적용한 새 프로젝트를 시작할 때 최적화된 설정입니다.
+## 🚀 주요 기능 (Features)
 
----
+- **Modern Python**: **Python 3.13** 최신 버전을 기반으로 구축되었습니다.
+- **Fast Package Management**: **[uv](https://github.com/astral-sh/uv)**를 사용하여 의존성을 매우 빠르게 관리하고 해결합니다.
+- **Dockerized**: 개발, 테스트, 배포 환경에 최적화된 멀티 스테이지 `Dockerfile`을 제공합니다.
+- **Event Streaming**: **Kafka**가 **KRaft 모드**(Zookeeper 제거)로 설정되어 있어 가볍고 효율적인 이벤트 스트리밍환경을 제공합니다.
+- **High Code Quality**: **Ruff** (린팅/포맷팅), **Mypy** (Strict 타입 검사), **Pre-commit** 뿐만 아니라 **Interrogate** (문서화 커버리지)를 도입하여 최상의 코드 품질을 유지합니다.
+- **Databases**: **PostgreSQL 17** 및 **Redis 7**이 즉시 사용 가능한 상태로 설정되어 있습니다.
+- **Security Check**: `detect-secrets`와 `pip-audit`을 통해 비밀 정보 노출과 패키지 취약점을 사전에 방지합니다.
 
-## ✨ 주요 기능
+## 📂 프로젝트 구조 (Project Structure)
 
-- **⚡ uv**: Rust로 작성된 초고속 Python 패키지 관리자
-- **🐳 Docker**: 컨테이너화된 개발 및 배포 환경
-- **⚡ Ruff**: 빠른 Python 린터 및 코드 포매터
-- **🔒 Pre-commit**: 자동화된 Git hooks로 코드 품질 보장
-- **✅ Pytest**: 강력한 테스트 프레임워크
-- **🔄 CI/CD**: Git Flow 지원 GitHub Actions 워크플로우
+```bash
+.
+├── .agent/               # MCP Agent 규칙 및 워크플로우
+├── .cursor/              # Cursor IDE 전용 규칙
+├── .github/              # GitHub Actions 워크플로우 및 템플릿
+├── app/                  # 애플리케이션 소스 코드 (Template)
+├── deploy/               # Kustomize 배포 설정
+│   ├── base/             # 기본 리소스 정의
+│   └── overlays/         # 환경별(dev, prod) 오버레이
+├── docs/                 # 프로젝트 문서
+├── logs/                 # 애플리케이션 로그 저장소
+├── tests/                # 테스트 코드
+│   ├── unit/             # 단위 테스트
+│   └── load/             # 부하 테스트
+├── Dockerfile            # 멀티 스테이지 Docker 빌드 파일
+├── docker-compose.test.yml # 테스트 및 CI용 Docker Compose 설정
+├── pyproject.toml        # 프로젝트 설정 및 의존성 관리 (uv)
+├── .pre-commit-config.yaml # Git Hook 설정
+├── .gitmessage           # Git 커밋 메시지 템플릿
+└── .secrets.baseline     # detect-secrets 베이스라인 파일
+```
 
----
+## 🛠️ 기술 스택 (Tech Stack)
 
-## 📋 필수 요구 사항
+- **Language**: Python 3.13
+- **Package Manager**: [uv](https://docs.astral.sh/uv/)
+- **Web Framework**: FastAPI (권장)
+- **Containerization**: Docker
+- **Infrastructure**:
+    - **PostgreSQL 17** (Database)
+    - **Redis 7** (Cache/Broker)
+    - **Kafka 7.5.0** (Event Streaming, KRaft Mode)
+- **Code Quality & Testing**:
+    - **Ruff**: Linting & Formatting (Strict Rules applied)
+    - **Mypy**: Static Type Checking (Strict Mode)
+    - **Interrogate**: Documentation Coverage Check (Fail under 90%)
+    - **Pytest**: Testing Framework
+    - **Pytest-mock**: Mocking library for tests
+- **Security**: Detect Secrets, Pip Audit
+
+## 📋 사전 요구사항 (Prerequisites)
 
 - **Python** 3.13 이상
 - **Docker** 및 **Docker Compose**
-- **uv** (의존성 관리)
-- **Git** (버전 관리)
+- **uv** (설치 방법: `curl -LsSf https://astral.sh/uv/install.sh | sh`)
 
----
+## ⚡ 시작하기 (Getting Started)
 
-## 🛠️ 템플릿 사용 방법
+### 1. 설치 (Installation)
 
-### 1. 템플릿으로 새 저장소 생성
-
-GitHub에서 이 저장소를 템플릿으로 사용하여 새 프로젝트를 생성합니다:
-
-1. 저장소 페이지에서 **"Use this template"** 버튼 클릭
-2. 새 저장소 이름 및 설정 입력
-3. **"Create repository from template"** 클릭
-
-### 2. 로컬 개발 환경 설정
+저장소를 클론하고 `uv`를 사용하여 의존성을 설치합니다.
 
 ```bash
-# uv 설치 (macOS/Linux)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# uv 설치 (Windows)
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# 새로 생성한 저장소 클론
-git clone <your-repository-url>
-cd <your-project-name>
-
-# 의존성 동기화 (가상환경 자동 생성)
+# 개발 의존성을 포함하여 모든 패키지 설치
 uv sync
-
-# 가상 환경 활성화 (선택 사항, uv run 사용 시 불필요)
-# macOS/Linux
-source .venv/bin/activate
-# Windows
-.venv\Scripts\activate
-
-# Pre-commit hooks 설치
-pre-commit install
-
-# Git 커밋 템플릿 설정
-git config commit.template .gitmessage
 ```
 
-### 3. 환경 변수 설정
+### 2. Pre-commit 설정 (Recommended)
+
+커밋할 때마다 코드 품질을 자동으로 검사하도록 Git Hook을 설치합니다.
+이 프로젝트는 엄격한 규칙(문서화, 복잡도, 타입 등)을 적용합니다.
 
 ```bash
-# .env.example을 복사하여 .env 파일 생성
-cp .env.example .env
-
-# 필요한 환경 변수 수정
+uv run pre-commit install
 ```
 
----
+### 3. 로컬 실행 (Running Locally)
 
-## 🌿 Git Flow 적용
-
-이 템플릿은 **Git Flow** 브랜치 전략을 지원합니다. 새 프로젝트에서 Git Flow를 초기화하려면:
+`uv`를 통해 애플리케이션을 로컬 개발 모드로 실행할 수 있습니다.
 
 ```bash
-# Git Flow 초기화 (명령어가 설치되어 있다면)
-git flow init
-
-# 또는 수동으로 브랜치 생성
-git checkout -b develop
-git push -u origin develop
+# Reload 모드로 실행
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Git Flow 브랜치 구조
+### 4. Docker로 실행 (Running with Docker)
 
-- **main**: 프로덕션 릴리스
-- **develop**: 개발 통합 브랜치
-- **feature/**: 새로운 기능 개발 (`feature/feature-name`)
-- **release/**: 릴리스 준비 (`release/v1.0.0`)
-- **hotfix/**: 긴급 버그 수정 (`hotfix/bug-description`)
+이 프로젝트는 효율적인 빌드를 위해 멀티 스테이지 `Dockerfile`을 사용합니다.
 
-### CI/CD 트리거
-
-GitHub Actions는 다음 브랜치에서 자동으로 실행됩니다:
-
-- **Push**: `main`, `master`, `develop`, `release/**`, `hotfix/**`
-- **Pull Request**: `main`, `master`, `develop`
-
----
-
-## 🚀 사용 방법
-
-### 로컬 실행
-
+**개발 모드 (Development):**
 ```bash
-# 애플리케이션 시작 (uv run 사용)
-uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+docker build --target dev -t my-app:dev .
+docker run -p 8000:8000 -v $(pwd)/app:/app/app my-app:dev
 ```
 
-### Docker로 실행
-
+**배포용 빌드 (Production):**
 ```bash
-# Docker Compose로 빌드 및 실행
-docker-compose up --build
+docker build --target release -t my-app:release .
+docker run -p 8000:8000 my-app:release
 ```
 
-애플리케이션은 `http://localhost:8000`에서 접근 가능합니다.
+## 🔐 보안 및 비밀 관리 (Secrets Management)
 
-### 📚 API 문서
+이 프로젝트는 `detect-secrets`를 사용하여 소스 코드에 비밀 정보(API Key, Password 등)가 포함되는 것을 방지합니다.
 
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+**비밀 정보 스캔 및 베이스라인 업데이트:**
 
----
-
-## 💻 개발
-
-### 테스트 실행
+새로운 비밀 정보가 감지되었을 때, 의도된 것이라면 베이스라인을 업데이트해야 합니다.
 
 ```bash
-# 모든 테스트 실행
+# 전체 파일 스캔 및 베이스라인 갱신
+uv run detect-secrets scan > .secrets.baseline
+
+# 베이스라인 검사 (CI에서 수행됨)
+uv run detect-secrets-hook --baseline .secrets.baseline $(git ls-files)
+```
+
+## 📝 Git 커밋 컨벤션 (Commit Convention)
+
+`.gitmessage` 파일에 정의된 규칙을 따릅니다. 커밋 메시지는 다음과 같은 형식을 권장합니다:
+
+```text
+<type> : <subject>
+
+<body (optional)>
+
+<footer> (optional)
+```
+
+- **type**: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `build`, `ci`, `release`
+- **subject**: 50자 이내, 명확한 변경 사항 요약, 마침표(.) 금지
+
+## 🧪 테스트 (Testing)
+
+엄격한 품질 관리를 위해 테스트 코드 작성은 필수입니다.
+
+**Unit Test 실행:**
+
+```bash
 uv run pytest
-
-# 특정 테스트 파일 실행
-uv run pytest tests/unit/test_example.py
-
-# 커버리지 포함
-uv run pytest --cov=src
 ```
+*Tip: `interrogate`가 `docs`와 `tests`를 제외한 모든 모듈의 문서화율 90% 이상을 요구합니다.*
+*Tip: `pytest-mock`을 사용하여 외부 의존성을 쉽게 모킹할 수 있습니다.*
 
-### 린팅 및 포매팅
+**Docker Compose를 이용한 통합 테스트:**
+
+격리된 환경(DB, Redis, Kafka 포함)에서 전체 테스트를 수행합니다.
 
 ```bash
-# Ruff로 린트 검사 및 자동 수정
-uv run ruff check . --fix
-
-# 코드 포매팅
-uv run ruff format .
-
-# Mypy로 타입 검사
-uv run mypy src/
-
-# Pre-commit으로 모든 검사 실행
-pre-commit run --all-files
+docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
 ```
 
----
+### 테스트 환경 변수 (Test Environment)
 
-## 📂 프로젝트 구조
+`docker-compose.test.yml`은 테스트를 위해 다음 서비스들을 자동으로 구성합니다:
 
-```
-.
-├── .github/
-│   └── workflows/          # 🤖 CI/CD 워크플로우 (Git Flow 지원)
-├── deploy/                 # 🚀 배포 관련 설정
-├── logs/                   # 📝 애플리케이션 로그
-├── src/                    # 🧠 메인 소스 코드
-│   ├── core/               # ⚙️ 핵심 기능 (설정, 로거 등)
-│   ├── db/                 # 💾 데이터베이스 연결 및 모델
-│   ├── main.py             # 🏁 FastAPI 애플리케이션 진입점
-│   └── ...
-├── tests/                  # 🧪 테스트 코드
-│   ├── unit/               # 단위 테스트
-│   ├── integration/        # 통합 테스트
-│   └── ...
-├── .dockerignore           # Docker 빌드 제외 파일
-├── .env.example            # 환경 변수 예제
-├── .gitignore              # Git 추적 제외 파일
-├── .gitmessage             # 📝 Git 커밋 메시지 템플릿
-├── .pre-commit-config.yaml # 🔒 Pre-commit hooks 설정
-├── Dockerfile              # 🐳 Docker 이미지 정의
-├── docker-compose.yml      # 🐙 Docker Compose 구성
-├── docker-compose.test.yml # 🧪 테스트용 Docker Compose
-├── uv.lock                 # 📌 잠긴 의존성 버전 (uv)
-├── pyproject.toml          # 📦 프로젝트 및 도구 설정
-└── README.md               # 📖 이 문서
-```
+| 서비스 | 설정 | 비고 |
+|--------|------|------|
+| **PostgreSQL** | User: `postgres`, DB: `app_db` | 데이터베이스 |
+| **Redis** | Port: `6379` | 캐시 및 메시지 브로커 |
+| **Kafka** | KRaft Mode, Port: `9092` | Zookeeper 없이 동작 |
 
----
+## 📦 Docker Stages 상세 (Docker Stages)
 
-## 🔧 설정 파일 개요
-
-### `pyproject.toml`
-- uv 의존성 및 메타데이터
-- Ruff 린팅 및 포매팅 규칙
-- Mypy 타입 검사 설정
-- Pytest 테스트 옵션
-
-### `.pre-commit-config.yaml`
-커밋 전 자동으로 실행되는 검사:
-- JSON/YAML 포맷 검사
-- 파일 크기 제한
-- Trailing whitespace 제거
-- Ruff 린팅 및 포매팅
-- Mypy 타입 검사
-
-### `.github/workflows/backend-ci.yml`
-Git Flow 지원 CI/CD 파이프라인:
-1. Pre-commit 검사
-2. Docker 이미지 빌드
-3. 테스트 실행
-
----
-
-## 📝 커밋 메시지 규칙
-
-이 프로젝트는 `.gitmessage` 템플릿을 사용합니다:
-
-```bash
-# 커밋 템플릿 설정
-git config commit.template .gitmessage
-```
-
-커밋 메시지 형식:
-```
-<타입>: <제목>
-
-<본문>
-
-<푸터>
-```
-
-**타입 종류**:
-- `feat`: 새로운 기능
-- `fix`: 버그 수정
-- `docs`: 문서 변경
-- `style`: 코드 포매팅
-- `refactor`: 코드 리팩토링
-- `test`: 테스트 추가/수정
-- `chore`: 빌드 프로세스 또는 도구 변경
-
----
-
-## 🤝 기여 방법
-
-1. Feature 브랜치 생성 (`git checkout -b feature/amazing-feature`)
-2. 변경 사항 커밋 (`git commit -m 'feat: Add amazing feature'`)
-3. 브랜치에 Push (`git push origin feature/amazing-feature`)
-4. Pull Request 생성
-
----
-
-## 📄 라이선스
-
-이 템플릿은 자유롭게 사용, 수정 및 배포할 수 있습니다.
-
----
-
-## 🙋 도움말
-
-문제가 발생하거나 질문이 있으면 이슈를 생성해 주세요.
-
-**Happy Coding! 🚀**
+1.  **base**: OS 기본 패키지 및 `uv` 설치.
+2.  **prod-deps**: 프로덕션용 Python 의존성 설치.
+3.  **dev-deps**: 개발용 의존성 설치.
+4.  **test**: CI/CD 파이프라인에서 테스트 수행용.
+5.  **release**: 최종 배포용 경량 이미지 (Non-root 사용자 실행).
+6.  **dev**: 로컬 개발용 (Git, Vim 등 도구 포함).

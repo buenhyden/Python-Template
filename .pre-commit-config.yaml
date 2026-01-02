@@ -3,76 +3,60 @@ repos:
     rev: v4.6.0
     hooks:
       - id: check-json
-        # Verifies that JSON files are valid.
+      - id: check-ast
+      - id: check-docstring-first
       - id: pretty-format-json
-        # Format JSON files.
-
         args: [--autofix, --indent=2, --no-ensure-ascii, --no-sort-keys]
       - id: check-added-large-files
-        # Prevent giant files from being committed.
-
-        args: [--maxkb=500000]
+        args: [--maxkb=50000]
       - id: check-case-conflict
-        # Check for files that would conflict in case-insensitive filesystems.
       - id: check-merge-conflict
-        # Check for files that contain merge conflict strings.
       - id: check-yaml
-        # Verifies that YAML files are valid.
       - id: check-toml
-        # Verifies that TOML files are valid.
       - id: end-of-file-fixer
-        # Ensures that a file is either empty, or ends with one newline.
       - id: mixed-line-ending
-        # Replaces or checks mixed line ending.
       - id: trailing-whitespace
-        # Trims trailing whitespace.
-
         args: [--markdown-linebreak-ext=md]
       - id: debug-statements
-        # Check for debugger imports and py37+ `breakpoint()` calls in python source.
       - id: name-tests-test
-        # Verify that test files are named correctly.
-
         exclude: ^tests/load/locustfile\.py$
-      - id: requirements-txt-fixer
-        # Sorts entries in requirements.txt.
   - repo: https://github.com/google/yamlfmt
     rev: v0.19.0
     hooks:
       - id: yamlfmt
-        # Format YAML files.
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
       - id: codespell
-        # Check for common misspellings in text files.
+        # codespell 실행을 위해 필요한 의존성을 명시합니다.
 
         additional_dependencies:
-          - tomli
+          - codespell
+          - tomli # pyproject.toml 파일을 읽기 위해 필요합니다.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # An extremely fast Python linter and code formatter, written in Rust.
-
     rev: "v0.14.10"
     hooks:
-      # Run the linter.
       - id: ruff
         args: [--fix]
       - id: ruff-format
-        # Run the formatter.
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      - id: interrogate
+        # pyproject.toml의 설정을 기반으로 문서화율 검사
+
+        args: [-vv, --style=google]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.1 # 최신 버전 확인 권장
+    rev: v1.14.1
     hooks:
       - id: mypy
-        additional_dependencies: ["pydantic>=2.12.5", # Pydantic 타입 인식을 위해 필요
-          "types-requests", # 사용하는 라이브러리의 stub 패키지 추가
-        ]
-        # pyproject.toml의 설정을 따르도록 구성
+        additional_dependencies: ["pydantic>=2.12.5", "types-requests"]
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
-        exclude: uv.lock # 제외할 파일 설정
+        exclude: uv.lock
   - repo: local
     hooks:
       - id: uv-lock-check
