@@ -56,7 +56,7 @@ FROM dev-deps AS test
 WORKDIR /app
 RUN mkdir /app/logs
 # 소스 및 테스트 코드 복사
-COPY ./src ./src
+COPY ./app ./app
 COPY ./tests ./tests
 COPY .pre-commit-config.yaml .
 COPY pyproject.toml .
@@ -95,11 +95,11 @@ WORKDIR /app
 COPY --from=prod-deps --chown=appuser:appuser /app/.venv /app/.venv
 
 # 4. 소스 코드 복사
-COPY --chown=appuser:appuser ./src ./src
+COPY --chown=appuser:appuser ./app ./app
 
 # 5. 유저 전환 및 실행
 USER appuser
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ==========================================
 # Stage 5: Dev (로컬 개발용 이미지)
@@ -124,7 +124,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen
 
 # 소스 코드 복사 (Docker Compose 볼륨 마운트 사용 시 덮어씌워짐)
-COPY ./src ./src
+COPY ./app ./app
 
 # 개발 모드 실행 (Reload 옵션 활성화)
-CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
